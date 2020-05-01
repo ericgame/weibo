@@ -10,7 +10,7 @@
             讓我們開始吧!!
         </p>
         <p>
-            <a class="btn btn-lg btn-success" href="" role="button">歡迎註冊</a>
+            <a class="btn btn-lg btn-success" href="{{ route('signup') }}" role="button">歡迎註冊</a>
         </p>
     </div>
 @stop
