@@ -9,14 +9,14 @@
         </div>
         <div class="card-body">
             @include('shared._errors')
-            <form action="">
+            <form method="POST" action="{{ route('users.store') }}">
                 {{ csrf_field() }}
                 <div class="form-group">
                     <label for="name">名稱：</label>
                     <input type="text" name="name" class="form-control" value="{{ old('name') }}">
                 </div>
                 <div class="form-group">
-                    <label for="email">e-mail：</label>
+                    <label for="email">E-mail：</label>
                     <input type="text" name="email" class="form-control" value="{{ old('email') }}">
                 </div>
                 <div class="form-group">
