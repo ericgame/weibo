@@ -7,6 +7,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 use Auth;
+use App\Notifications\ResetPassword;
 
 class User extends Authenticatable
 {
@@ -48,6 +49,12 @@ class User extends Authenticatable
         });
     }
 
+    //重設密碼
+    public function sendPasswordResetNotification($token)
+    {
+        $this->notify(new ResetPassword($token));
+    }
+
     public function gravatar($size='100')
     {
         $hash=md5(strtolower(trim($this->attributes['email'])));
@@ -57,6 +64,17 @@ class User extends Authenticatable
     public function statuses()
     {
         return $this->hasMany(Status::class);
+    }
+
+    public function feed()
+    {
+        $user_ids=$this->followings->pluck('id')->toArray();
+
+        array_push($user_ids, $this->id);
+
+        return Status::whereIn('user_id', $user_ids)
+                        ->with('user')
+                        ->orderBy('created_at', 'desc');
     }
 
     public function followers(){
@@ -75,5 +93,19 @@ class User extends Authenticatable
         }
 
         $this->followings()->sync($user_ids,false);
+    }
+
+    public function unfollow($user_ids)
+    {
+        if(! is_array($user_ids)){
+            $user_ids=compact('user_ids');
+        }
+
+        $this->followings()->detach($user_ids);
+    }
+
+    public function isFollowing($user_id)
+    {
+        return $this->followings->contains($user_id);
     }
 }

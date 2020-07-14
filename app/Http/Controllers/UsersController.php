@@ -9,6 +9,23 @@ use Mail;
 
 class UsersController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth', [
+            'except' => ['show', 'create', 'store', 'index', 'confirmEmail']
+        ]);
+
+        $this->middleware('guest', [
+            'only' => ['create']
+        ]);
+    }
+
+    public function index()
+    {
+        $users=User::paginate(10);
+        return view('users.index', compact('users'));
+    }
+
     public function create()
     {
         return view('users.create');
@@ -43,6 +60,45 @@ class UsersController extends Controller
         session()->flash('success','註冊成功！請您完成email認證(點選確認信中的網址)，才能登入Weibo網站。');
 
         return redirect()->route('users.show',[$user]);
+    }
+
+    public function edit(User $user)
+    {
+        $this->authorize('update', $user);
+
+        return view('users.edit', compact('user'));
+    }
+
+    public function update(User $user, Request $request)
+    {
+        $this->authorize('update', $user);
+
+        $this->validate($request, [
+            'name' => 'required|max:50',
+            'password' => 'nullable|confirmed|min:6'
+        ]);
+
+        $data=[];
+        $data['name']=$request->name;
+
+        if($request->password){
+            $data['password']=bcrypt($request->password);
+        }
+
+        $user->update($data);
+
+        session()->flash('success', '個人資料更新成功！');
+
+        return redirect()->route('users.show', $user);
+    }
+
+    public function destroy(User $user)
+    {
+        $this->authorize('destroy', $user);
+        
+        $user->delete();
+        session()->flash('success', '刪除成功！');
+        return back();
     }
 
     protected function sendEmailConfirmationTo($user)
